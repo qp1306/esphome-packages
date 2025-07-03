@@ -1,0 +1,143 @@
+################################################################################
+# Text Sensors
+################################################################################
+text_sensor:
+  - platform: version
+    id: ${device_internal_name}_version
+    name: "ESPHome Version"
+    hide_timestamp: true
+    disabled_by_default: true
+
+  - platform: template
+    id: ${device_internal_name}_uptime_human
+    name: "Uptime Human Readable"
+    icon: mdi:clock-start
+    entity_category: diagnostic
+    disabled_by_default: true
+ 
+
+  - platform: template
+    name: "Current Dimmer Level"
+    id: current_dimmer_level_text
+    lambda: |-
+      char buffer[10];
+      sprintf(buffer, "%.2f", id(current_dimmer_level));
+      return std::string(buffer);
+    update_interval: 10s
+    icon: "mdi:lightbulb-on"
+    entity_category: diagnostic
+    disabled_by_default: false
+    web_server:
+      sorting_weight: 1 
+
+# Switch counters
+  - platform: template
+    name: "Switch 1 Press Count"
+    lambda: |-
+      return to_string(id(switch_1_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 2 Press Count"
+    lambda: |-
+      return to_string(id(switch_2_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 3 Press Count"
+    lambda: |-
+      return to_string(id(switch_3_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 4 Press Count"
+    lambda: |-
+      return to_string(id(switch_4_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 5 Press Count"
+    lambda: |-
+      return to_string(id(switch_5_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 6 Press Count"
+    lambda: |-
+      return to_string(id(switch_6_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10      
+                              
+# Runtime timers
+  - platform: template
+    name: "Toilet Light Runtime"
+    lambda: |-
+      int seconds = id(light_1_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15     
+    
+
+  - platform: template
+    name: "Main Light Runtime"
+    lambda: |-
+      int seconds = id(light_2_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15     
+
+  - platform: template
+    name: "Shower Light Runtime"
+    lambda: |-
+      int seconds = id(light_3_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15     
+
+  - platform: template
+    name: "Fan Runtime"
+    lambda: |-
+      int seconds = id(light_4_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15 
