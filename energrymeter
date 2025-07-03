@@ -1,0 +1,92 @@
+# Energy meter UNCOMMITED THE FOLLOWING LINES  line 463, and 818
+################################################################################
+# Sensor Settings
+################################################################################
+sensor:
+  - platform: pzemac
+    current:
+      name: "${device_friendly_name} Current"
+      icon: mdi:current-ac
+    voltage:
+      name: "${device_friendly_name} Voltage"
+      icon: mdi:flash-triangle-outline
+    energy:
+      name: "${device_friendly_name} Energy"
+      icon: mdi:home-lightning-bolt
+    power:
+      name: "${device_friendly_name} Power"
+      id: power_monitor
+      icon: mdi:power-cycle
+    frequency:
+      name: "${device_friendly_name} Frequency"
+      icon: mdi:sine-wave
+    power_factor:
+      name: "${device_friendly_name} Power Factor"
+      icon: mdi:sine-wave
+    update_interval: 1s
+
+  - platform: total_daily_energy
+    name: "Total Daily Energy"
+    power_id: power_monitor
+    state_class: total_increasing
+    restore: false
+    device_class: energy
+    filters:
+      - multiply: 0.001
+    accuracy_decimals: 4
+    unit_of_measurement: kW
+    icon: mdi:counter
+
+  - platform: integration
+    name: "Energy Meter"
+    id: energy_meter       
+    sensor: power_monitor
+    time_unit: h
+    filters:
+      - lambda: return x * 0.001;
+    unit_of_measurement: kWh
+    icon: mdi:counter
+    restore: true
+    web_server:
+      sorting_weight: 5  
+
+
+################################################################################
+# Text Sensors
+################################################################################
+text_sensor:
+# ----------------------------------------------------------------------------------------------------------
+# Commented out until needed
+# ----------------------------------------------------------------------------------------------------------
+
+
+  - platform: uart
+    uart_id: energomonitor_uart
+    name: "${device_friendly_name} Energy Reset"
+    data: [0x01, 0x42, 0x80, 0x11]
+    web_server:
+      sorting_weight: 100
+
+ Energy Meter
+  - platform: template
+    name: "Reset Energy Meter"
+    id: reset_energy_meter
+    turn_on_action:
+      - lambda: |-
+          id(energy_meter).publish_state(0.0);
+          auto now = id(base_code_backup_internal_time).now();
+          char timestamp[20];
+          sprintf(timestamp, "%02d:%02d:%02d", now.hour, now.minute, now.second);
+          id(system_log) += std::string(timestamp) + " - Energy Meter manually reset.\n";
+          if (id(system_log).length() > 3000)
+            id(system_log).erase(0, 1000);
+      - switch.turn_off: reset_energy_meter
+
+  - platform: template
+    id: reset_energy_meter_switch
+    name: "Reset Energy Meter Switch (Internal)"
+    internal: true
+    turn_on_action:
+      - switch.turn_off: reset_energy_meter_switch
+
+    
