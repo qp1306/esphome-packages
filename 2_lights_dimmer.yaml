@@ -1,0 +1,152 @@
+binary_sensor:
+#########################################################      
+# This turns the dimmer on from any out the light iputs 
+#########################################################  
+  - platform: template
+    id: any_light_on
+    name: "Any Light On"
+    lambda: |-
+      return (id(light_1).current_values.is_on() || id(light_2).current_values.is_on() || id(light_3).current_values.is_on());
+#. Change the above for 1,2,3 lights when needed. 
+    on_press:
+      - light.turn_on: lightdimmer
+    on_release:
+      - light.turn_off: lightdimmer
+    device_class: light
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 10
+
+#########################################################      
+# Switch Input : 1
+######################################################### 
+  - platform: gpio
+    id: switch_1
+    pin:
+      number: ${gpio_switch_1}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_1}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_1
+#switch counter       
+      - lambda: |-
+          id(switch_1_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 1 pressed %d times", id(switch_1_press_count));
+    web_server:
+      sorting_weight: 10
+ 
+#########################################################      
+# Switch Input : 2
+#########################################################
+  - platform: gpio
+    id: switch_2
+    pin:
+      number: ${gpio_switch_2}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_2}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_2 
+#switch counter       
+      - lambda: |-
+          id(switch_2_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 2 pressed %d times", id(switch_2_press_count));      
+    web_server:
+      sorting_weight: 9.9    
+
+
+
+##################################################################################################################
+# Light Control
+##################################################################################################################
+light:
+  - platform: monochromatic
+    id: lightdimmer
+    output: output1
+    name: ${lights_dimmer}
+    default_transition_length: 10ms
+    gamma_correct: 3.5
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 1    
+#########################################################      
+# Light : 1 Home Assistant switch / webinter face switch
+#########################################################
+  - platform: binary
+    id: light_1
+    output: relay_1
+    name: ${relay_light_name_1}
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 2    
+
+#########################################################      
+# Light : 2 Home Assistant switch / webinter face switch
+#########################################################
+  - platform: binary
+    id: light_2
+    output: relay_2
+    name: ${relay_light_name_2}
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 2    
+
+
+
+##################################################################################################################
+# Outputs
+##################################################################################################################
+output:
+#########################################################      
+# Actual Dimmer Control Slider
+#########################################################  
+  - platform: ac_dimmer
+    id: output1
+    gate_pin: ${gpio_gate_pin}
+    method: LEADING_PULSE
+    init_with_half_cycle: True
+    zero_cross_pin:
+      number: ${gpio_zero_cross}
+      mode:
+        input: true
+      inverted: false
+    min_power: 20%
+#########################################################      
+# Relay Output : 1 
+#########################################################
+  - platform: gpio
+    id: relay_1
+    pin: ${gpio_relay_1}
+#########################################################      
+# Relay Output : 2
+#########################################################
+  - platform: gpio
+    id: relay_2
+    pin: ${gpio_relay_2}
+
+
+# Runtime timers
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            light.is_on: light_1
+          then:
+            - lambda: 'id(light_1_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_2
+          then:
+            - lambda: 'id(light_2_runtime) += 1;'
+
+
+
+
+
+
+      
