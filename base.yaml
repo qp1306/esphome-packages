@@ -1,0 +1,40 @@
+esphome:
+  name: ${device_internal_name}
+  friendly_name: ${device_friendly_name}
+
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+    version: latest
+
+captive_portal:
+
+logger:
+
+api:
+  id: ${device_internal_name}_ha_api
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+
+ota:
+  platform: esphome
+  password: !secret web_server_password
+
+improv_serial:
+
+safe_mode:
+  disabled: false
+  reboot_timeout: 5min
+  num_attempts: 5
+
+web_server:
+  port: 80
+  version: 3
+  include_internal: true
+  auth:
+    username: !secret web_server_user
+    password: !secret web_server_password
+  local: true  
