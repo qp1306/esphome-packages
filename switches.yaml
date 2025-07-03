@@ -1,0 +1,110 @@
+################################################################################
+# Switches
+################################################################################
+switch:
+  - platform: restart
+    id: ${device_internal_name}_device_restart
+    name: "Restart"
+    web_server:
+      sorting_weight: 10    
+
+  - platform: safe_mode
+    id: ${device_internal_name}_device_safe_mode
+    name: "Use Safe Mode"
+    disabled_by_default: true
+    web_server:
+      sorting_weight: 10    
+
+
+# Reset Switchs Press Count
+  - platform: template
+    name: "Reset Switch 1 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_1_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 1 press count reset to 0");
+    web_server:
+      sorting_weight: 20
+
+  - platform: template
+    name: "Reset Switch 2 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_2_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 2 press count reset to 0");
+    web_server:
+      sorting_weight: 20      
+
+  - platform: template
+    name: "Reset Switch 3 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_3_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 3 press count reset to 0");
+    web_server:
+      sorting_weight: 20
+
+  - platform: template
+    name: "Reset Switch 4 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_4_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 4 press count reset to 0");
+    web_server:
+      sorting_weight: 20
+
+  - platform: template
+    name: "Reset Switch 5 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_5_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 5 press count reset to 0");
+    web_server:
+      sorting_weight: 20        
+
+  - platform: template
+    name: "Reset Switch 6 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_6_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 6 press count reset to 0");
+    web_server:
+      sorting_weight: 20                     
+
+# Runtime timers reset
+  - platform: template
+    name: "Reset Toilet Light Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_1_runtime) = 0;
+          ESP_LOGI("light_timer", "Toilet Light runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+
+  - platform: template
+    name: "Reset Main Light Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_2_runtime) = 0;
+          ESP_LOGI("light_timer", "Main Light runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+
+  - platform: template
+    name: "Reset Shower Light Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_3_runtime) = 0;
+          ESP_LOGI("light_timer", "Shower Light runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+
+  - platform: template
+    name: "Reset Fan Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_4_runtime) = 0;
+          ESP_LOGI("light_timer", "Fan runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+      
