@@ -117,3 +117,22 @@ sensor:
     entity_category: diagnostic
     disabled_by_default: true
     icon: mdi:wifi
+
+
+
+################################################################################
+# Switches
+################################################################################
+switch:
+  - platform: restart
+    id: ${device_internal_name}_device_restart
+    name: "Restart"
+    web_server:
+      sorting_weight: 10    
+
+  - platform: safe_mode
+    id: ${device_internal_name}_device_safe_mode
+    name: "Use Safe Mode"
+    disabled_by_default: true
+    web_server:
+      sorting_weight: 10    
