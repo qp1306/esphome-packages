@@ -1,0 +1,65 @@
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          auto parse_time = [](std::string s) -> int {
+            int h = std::stoi(s.substr(0, 2));
+            int m = std::stoi(s.substr(3, 2));
+            return h * 60 + m;
+          };
+
+          int current_minutes = id(base_code_backup_internal_time).now().hour * 60 + id(base_code_backup_internal_time).now().minute;
+
+          int t1_start = parse_time("${dimmer_time_1_start}");
+          int t1_end   = parse_time("${dimmer_time_1_end}");
+          int t2_start = parse_time("${dimmer_time_2_start}");
+          int t2_end   = parse_time("${dimmer_time_2_end}");
+          int t3_start = parse_time("${dimmer_time_3_start}");
+          int t3_end   = parse_time("${dimmer_time_3_end}");
+
+          float level = 0.0;
+
+          if (current_minutes >= t1_start && current_minutes < t1_end)
+            level = ${dimmer_level_1};
+          else if (current_minutes >= t2_start && current_minutes < t2_end)
+            level = ${dimmer_level_2};
+          else if (current_minutes >= t3_start && current_minutes <= t3_end)
+            level = ${dimmer_level_3};
+          else
+            level = 0.0;
+
+          if (id(current_dimmer_level) != level) {
+            id(current_dimmer_level) = level;
+            ESP_LOGI("dimmer_sched", "Time: %dmin - New scheduled dimmer level: %.2f", current_minutes, level);
+          }
+      - if:
+          condition:
+            lambda: 'return id(lightdimmer).current_values.is_on();'
+          then:
+            - light.turn_on:
+                id: lightdimmer
+                brightness: !lambda 'return id(current_dimmer_level);'
+
+# Runtime timers
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            light.is_on: light_1
+          then:
+            - lambda: 'id(light_1_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_2
+          then:
+            - lambda: 'id(light_2_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_3
+          then:
+            - lambda: 'id(light_3_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_4
+          then:
+            - lambda: 'id(light_4_runtime) += 1;'
