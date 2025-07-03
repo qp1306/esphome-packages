@@ -136,3 +136,15 @@ switch:
     disabled_by_default: true
     web_server:
       sorting_weight: 10    
+
+
+##################################################################################################################
+# Binary Sensors
+##################################################################################################################
+binary_sensor:
+  - platform: status
+    id: ${device_internal_name}_status
+    name: "Status"
+    icon: mdi:network-pos
+    disabled_by_default: true
+      
