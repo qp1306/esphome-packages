@@ -1,0 +1,62 @@
+  - id: ${device_internal_name}_wifi_connection
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+
+  - id: current_dimmer_level
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+
+# Energy meter
+  - id: system_log
+    type: std::string
+    restore_value: yes
+    initial_value: ""    
+  
+
+# Switch counter section of globals
+  - id: switch_1_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_2_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_3_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_4_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_5_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_6_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+# Runtime timers 
+  # Light runtime timers (in seconds)
+  - id: light_1_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_2_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_3_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_4_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
