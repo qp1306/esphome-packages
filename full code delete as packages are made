@@ -1,0 +1,947 @@
+################################################################################
+# Substitutions (Variables)
+################################################################################
+substitutions:
+  device_internal_name: base_code_backup #(example esphome_starting_base)
+  device_wifi_name: base-code-backup #(example esphome-starting-base)
+  device_friendly_name: base code backup #(example ESPHome Starting Base)
+  device_sampling_time: 30s
+  region: Australia/Sydney
+
+  # Light Names                   # Change the names here to what ever the devices controls
+  light_name_1: "Toilet Light"
+  light_name_2: "Main Light"       
+  light_name_3: "Shower Light"
+  light_name_4: "Fan"
+  lights_dimmer: "Dimmer Module slider"
+  relay_light_name_1: "Toilet "
+  relay_light_name_2: "Main Light "
+  relay_light_name_3: "Shower "
+  relay_light_name_4: "Fan"
+  fan_delay_off: "180s" # this is in seconds
+
+  # Switch Names                  # Change the names here to what ever the devices controls
+  switch_name_1: "Main Light"
+  switch_name_2: "Toilet Light"
+  switch_name_3: "Shower Light"     
+  switch_name_4: "Fan"
+  switch_name_5: "Spare Switch 5"
+  switch_name_6: "Spare Switch 6"
+
+
+  # Time changes for diming lights
+  dimmer_time_1_start: "00:01"
+  dimmer_time_1_end: "05:50"
+  dimmer_time_2_start: "5:51"
+  dimmer_time_2_end: "20:00"
+  dimmer_time_3_start: "20:01"
+  dimmer_time_3_end: "23:59"
+
+  #Dimmer levels # Adjust to the deired dimming levels 
+  dimmer_level_1: "0.4"
+  dimmer_level_2: "1"
+  dimmer_level_3: "0.6"
+
+  # Switch GPIO Pins.   # Don't change these
+  gpio_switch_1: GPIO16
+  gpio_switch_2: GPIO15
+  gpio_switch_3: GPIO7
+  gpio_switch_4: GPIO6
+  gpio_switch_5: GPIO5
+  gpio_switch_6: GPIO4  
+
+   # Output GPIO Pins   # Don't change these
+  gpio_relay_1: GPIO14
+  gpio_relay_2: GPIO13
+  gpio_relay_3: GPIO12
+  gpio_relay_4: GPIO11
+  gpio_gate_pin: GPIO9
+  gpio_zero_cross: GPIO10 
+
+
+################################################################################################################################################
+################################################################################################################################################
+#
+# The below section can be commited out for inputs / lights & outputs thats aren't needed or used.
+#
+################################################################################################################################################
+################################################################################################################################################
+
+
+##################################################################################################################
+# Binary Sensors
+##################################################################################################################
+binary_sensor:
+  - platform: status
+    id: ${device_internal_name}_status
+    name: "Status"
+    icon: mdi:network-pos
+    disabled_by_default: true
+  
+#########################################################      
+# This turns the dimmer on from any out the light iputs 
+#########################################################  
+  - platform: template
+    id: any_light_on
+    name: "Any Light On"
+    lambda: |-
+      return (id(light_1).current_values.is_on() || id(light_2).current_values.is_on() || id(light_3).current_values.is_on());
+#. Change the above for 1,2,3 lights when needed. 
+    on_press:
+      - light.turn_on: lightdimmer
+    on_release:
+      - light.turn_off: lightdimmer
+    device_class: light
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 10
+
+#########################################################      
+# Switch Input : 1
+######################################################### 
+  - platform: gpio
+    id: switch_1
+    pin:
+      number: ${gpio_switch_1}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_1}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_1
+#switch counter       
+      - lambda: |-
+          id(switch_1_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 1 pressed %d times", id(switch_1_press_count));
+    web_server:
+      sorting_weight: 10
+ 
+#########################################################      
+# Switch Input : 2
+#########################################################
+  - platform: gpio
+    id: switch_2
+    pin:
+      number: ${gpio_switch_2}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_2}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_2 
+#switch counter       
+      - lambda: |-
+          id(switch_2_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 2 pressed %d times", id(switch_2_press_count));      
+    web_server:
+      sorting_weight: 9.9    
+#########################################################      
+# Switch Input : 3
+#########################################################
+  - platform: gpio
+    id: switch_3
+    pin:
+      number: ${gpio_switch_3}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_3}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_3
+#switch counter       
+      - lambda: |-
+          id(switch_3_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 3 pressed %d times", id(switch_3_press_count));      
+    web_server:
+      sorting_weight: 10     
+#########################################################      
+# Switch Input : 4
+#########################################################
+  - platform: gpio
+    id: switch_4
+    pin:
+      number: ${gpio_switch_4}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_4}
+    filters:
+      - delayed_on: 13ms
+      - delayed_off:  ${fan_delay_off}
+    on_press:
+      then:
+        - light.turn_on: light_4
+#switch counter       
+        - lambda: |-
+            id(switch_4_press_count) += 1;
+            ESP_LOGI("switch_counter", "Switch 4 pressed %d times", id(switch_4_press_count));        
+    on_release:
+      then:
+        - light.turn_off: light_4
+    web_server:
+      sorting_weight: 10
+#########################################################      
+# Switch Input : 5
+#########################################################
+  - platform: gpio
+    id: switch_5
+    pin:
+      number: ${gpio_switch_5}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_5}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_1
+#switch counter       
+      - lambda: |-
+          id(switch_5_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 5 pressed %d times", id(switch_5_press_count));      
+    web_server:
+      sorting_weight: 10      
+#########################################################      
+# Switch Input : 6
+#########################################################
+  - platform: gpio
+    id: switch_6
+    pin:
+      number: ${gpio_switch_6}
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${switch_name_6}
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - light.toggle: light_1
+#switch counter       
+      - lambda: |-
+          id(switch_6_press_count) += 1;
+          ESP_LOGI("switch_counter", "Switch 6 pressed %d times", id(switch_6_press_count));      
+    web_server:
+      sorting_weight: 10      
+
+##################################################################################################################
+# Light Control
+##################################################################################################################
+light:
+  - platform: monochromatic
+    id: lightdimmer
+    output: output1
+    name: ${lights_dimmer}
+    default_transition_length: 10ms
+    gamma_correct: 3.5
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 1    
+#########################################################      
+# Light : 1 Home Assistant switch / webinter face switch
+#########################################################
+  - platform: binary
+    id: light_1
+    output: relay_1
+    name: ${relay_light_name_1}
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 2    
+
+#########################################################      
+# Light : 2 Home Assistant switch / webinter face switch
+#########################################################
+  - platform: binary
+    id: light_2
+    output: relay_2
+    name: ${relay_light_name_2}
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 2    
+#########################################################      
+# Light : 3 Home Assistant switch / webinter face switch
+#########################################################
+  - platform: binary
+    id: light_3
+    output: relay_3
+    name: ${relay_light_name_3}
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 2    
+#########################################################      
+# Light : 4 Home Assistant switch / webinter face switch
+#########################################################
+  - platform: binary
+    id: light_4
+    output: relay_4
+    name: ${relay_light_name_4}
+    restore_mode: ALWAYS_OFF
+    web_server:
+      sorting_weight: 3      
+
+##################################################################################################################
+# Outputs
+##################################################################################################################
+output:
+#########################################################      
+# Actual Dimmer Control Slider
+#########################################################  
+  - platform: ac_dimmer
+    id: output1
+    gate_pin: ${gpio_gate_pin}
+    method: LEADING_PULSE
+    init_with_half_cycle: True
+    zero_cross_pin:
+      number: ${gpio_zero_cross}
+      mode:
+        input: true
+      inverted: false
+    min_power: 20%
+#########################################################      
+# Relay Output : 1 
+#########################################################
+  - platform: gpio
+    id: relay_1
+    pin: ${gpio_relay_1}
+#########################################################      
+# Relay Output : 2
+#########################################################
+  - platform: gpio
+    id: relay_2
+    pin: ${gpio_relay_2}
+#########################################################      
+# Relay Output : 3 
+#########################################################
+  - platform: gpio
+    id: relay_3
+    pin: ${gpio_relay_3}
+#########################################################      
+# Relay Output : 4
+#########################################################
+  - platform: gpio
+    id: relay_4
+    pin: ${gpio_relay_4}
+
+
+
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          auto parse_time = [](std::string s) -> int {
+            int h = std::stoi(s.substr(0, 2));
+            int m = std::stoi(s.substr(3, 2));
+            return h * 60 + m;
+          };
+
+          int current_minutes = id(base_code_backup_internal_time).now().hour * 60 + id(base_code_backup_internal_time).now().minute;
+
+          int t1_start = parse_time("${dimmer_time_1_start}");
+          int t1_end   = parse_time("${dimmer_time_1_end}");
+          int t2_start = parse_time("${dimmer_time_2_start}");
+          int t2_end   = parse_time("${dimmer_time_2_end}");
+          int t3_start = parse_time("${dimmer_time_3_start}");
+          int t3_end   = parse_time("${dimmer_time_3_end}");
+
+          float level = 0.0;
+
+          if (current_minutes >= t1_start && current_minutes < t1_end)
+            level = ${dimmer_level_1};
+          else if (current_minutes >= t2_start && current_minutes < t2_end)
+            level = ${dimmer_level_2};
+          else if (current_minutes >= t3_start && current_minutes <= t3_end)
+            level = ${dimmer_level_3};
+          else
+            level = 0.0;
+
+          if (id(current_dimmer_level) != level) {
+            id(current_dimmer_level) = level;
+            ESP_LOGI("dimmer_sched", "Time: %dmin - New scheduled dimmer level: %.2f", current_minutes, level);
+          }
+      - if:
+          condition:
+            lambda: 'return id(lightdimmer).current_values.is_on();'
+          then:
+            - light.turn_on:
+                id: lightdimmer
+                brightness: !lambda 'return id(current_dimmer_level);'
+
+# Runtime timers
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            light.is_on: light_1
+          then:
+            - lambda: 'id(light_1_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_2
+          then:
+            - lambda: 'id(light_2_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_3
+          then:
+            - lambda: 'id(light_3_runtime) += 1;'
+      - if:
+          condition:
+            light.is_on: light_4
+          then:
+            - lambda: 'id(light_4_runtime) += 1;'
+
+
+################################################################################################################################################
+################################################################################################################################################
+# The below section is the General board base code — ESP32-S3 N16R8 Dev Board setup Don't touch or change.
+################################################################################################################################################
+################################################################################################################################################
+
+esphome:
+  name: ${device_internal_name}
+  friendly_name: ${device_friendly_name}
+
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+    version: latest
+
+captive_portal:
+
+logger:
+
+api:
+  id: ${device_internal_name}_ha_api
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+
+ota:
+  platform: esphome
+  password: !secret web_server_password
+
+improv_serial:
+
+safe_mode:
+  disabled: false
+  reboot_timeout: 5min
+  num_attempts: 5
+
+web_server:
+  port: 80
+  version: 3
+  include_internal: true
+  auth:
+    username: !secret web_server_user
+    password: !secret web_server_password
+  local: true  
+
+wifi:
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
+  ap:
+    ssid: ${device_wifi_name}
+    password: !secret web_server_password
+  domain: .local
+  fast_connect: true
+  power_save_mode: none
+
+globals:
+  - id: ${device_internal_name}_wifi_connection
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+
+  - id: current_dimmer_level
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+
+# Energy meter
+  - id: system_log
+    type: std::string
+    restore_value: yes
+    initial_value: ""    
+  
+
+# Switch counter section of globals
+  - id: switch_1_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_2_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_3_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_4_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_5_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: switch_6_press_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+# Runtime timers 
+  # Light runtime timers (in seconds)
+  - id: light_1_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_2_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_3_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_4_runtime
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+
+################################################################################
+# Time
+################################################################################
+time:
+  - platform: homeassistant
+    id: ${device_internal_name}_internal_time
+    timezone: ${region}
+  - platform: homeassistant
+    id: hass_time
+
+################################################################################
+# I2C
+################################################################################
+i2c:
+  - id: ${device_internal_name}_i2c_bus0
+    sda: GPIO48
+    scl: GPIO47
+    scan: true
+
+################################################################################
+# UART
+################################################################################
+uart:
+  id: energomonitor_uart 
+  rx_pin: 18
+  tx_pin: 17
+  baud_rate: 9600
+
+################################################################################
+# Sensors
+################################################################################
+sensor:
+  - platform: internal_temperature
+    id: ${device_internal_name}_internal_temperature
+    name: "Internal Temperature"
+    update_interval: ${device_sampling_time}
+    disabled_by_default: false
+    icon: mdi:coolant-temperature
+
+  - platform: uptime
+    id: ${device_internal_name}_uptime_sensor
+    name: "Uptime Sensor"
+    update_interval: ${device_sampling_time}
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: ${device_internal_name}_uptime_human
+            state: !lambda |-
+              int seconds = round(id(${device_internal_name}_uptime_sensor).raw_state);
+              int days = seconds / 86400;
+              seconds %= 86400;
+              int hours = seconds / 3600;
+              seconds %= 3600;
+              int minutes = seconds / 60;
+              seconds %= 60;
+              return (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              ).c_str();
+    internal: true
+
+  - platform: wifi_signal
+    id: ${device_internal_name}_wifi_signal
+    name: "WiFi Signal dB"
+    update_interval: ${device_sampling_time}
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:wifi
+
+  - platform: wifi_signal
+    id: ${device_internal_name}_wifi_signal_percentage
+    name: "WiFi Signal Percentage"
+    update_interval: ${device_sampling_time}
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "%"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:wifi
+
+
+# ----------------------------------------------------------------------------------------------------------
+# Commented out until needed
+# ----------------------------------------------------------------------------------------------------------
+
+
+# Energy meter UNCOMMITED THE FOLLOWING LINES  line 463, and 818
+
+#  - platform: pzemac
+#    current:
+#      name: "${device_friendly_name} Current"
+#      icon: mdi:current-ac
+#    voltage:
+#      name: "${device_friendly_name} Voltage"
+#      icon: mdi:flash-triangle-outline
+#    energy:
+#      name: "${device_friendly_name} Energy"
+#      icon: mdi:home-lightning-bolt
+#    power:
+#      name: "${device_friendly_name} Power"
+#      id: power_monitor
+#      icon: mdi:power-cycle
+#    frequency:
+#      name: "${device_friendly_name} Frequency"
+#      icon: mdi:sine-wave
+#    power_factor:
+#      name: "${device_friendly_name} Power Factor"
+#      icon: mdi:sine-wave
+#    update_interval: 1s
+
+#  - platform: total_daily_energy
+#    name: "Total Daily Energy"
+#    power_id: power_monitor
+#    state_class: total_increasing
+#    restore: false
+#    device_class: energy
+#    filters:
+#      - multiply: 0.001
+#    accuracy_decimals: 4
+#    unit_of_measurement: kW
+#    icon: mdi:counter
+
+#  - platform: integration
+#    name: "Energy Meter"
+#    id: energy_meter       
+#    sensor: power_monitor
+#    time_unit: h
+#    filters:
+#      - lambda: return x * 0.001;
+#    unit_of_measurement: kWh
+#    icon: mdi:counter
+#    restore: true
+#    web_server:
+#      sorting_weight: 5  
+    
+
+
+################################################################################
+# Text Sensors
+################################################################################
+text_sensor:
+  - platform: version
+    id: ${device_internal_name}_version
+    name: "ESPHome Version"
+    hide_timestamp: true
+    disabled_by_default: true
+
+  - platform: template
+    id: ${device_internal_name}_uptime_human
+    name: "Uptime Human Readable"
+    icon: mdi:clock-start
+    entity_category: diagnostic
+    disabled_by_default: true
+ 
+
+  - platform: template
+    name: "Current Dimmer Level"
+    id: current_dimmer_level_text
+    lambda: |-
+      char buffer[10];
+      sprintf(buffer, "%.2f", id(current_dimmer_level));
+      return std::string(buffer);
+    update_interval: 10s
+    icon: "mdi:lightbulb-on"
+    entity_category: diagnostic
+    disabled_by_default: false
+    web_server:
+      sorting_weight: 1 
+
+# Switch counters
+  - platform: template
+    name: "Switch 1 Press Count"
+    lambda: |-
+      return to_string(id(switch_1_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 2 Press Count"
+    lambda: |-
+      return to_string(id(switch_2_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 3 Press Count"
+    lambda: |-
+      return to_string(id(switch_3_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 4 Press Count"
+    lambda: |-
+      return to_string(id(switch_4_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 5 Press Count"
+    lambda: |-
+      return to_string(id(switch_5_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10
+  - platform: template
+    name: "Switch 6 Press Count"
+    lambda: |-
+      return to_string(id(switch_6_press_count));
+    update_interval: 30s
+    icon: "mdi:counter"
+    web_server:
+      sorting_weight: 10      
+                              
+# Runtime timers
+  - platform: template
+    name: "Toilet Light Runtime"
+    lambda: |-
+      int seconds = id(light_1_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15     
+    
+
+  - platform: template
+    name: "Main Light Runtime"
+    lambda: |-
+      int seconds = id(light_2_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15     
+
+  - platform: template
+    name: "Shower Light Runtime"
+    lambda: |-
+      int seconds = id(light_3_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15     
+
+  - platform: template
+    name: "Fan Runtime"
+    lambda: |-
+      int seconds = id(light_4_runtime);
+      int h = seconds / 3600;
+      int m = (seconds % 3600) / 60;
+      int s = seconds % 60;
+      char buffer[20];
+      sprintf(buffer, "%02dh %02dm %02ds", h, m, s);
+      return std::string(buffer);
+    update_interval: 5s
+    icon: mdi:timer
+    web_server:
+      sorting_weight: 15 
+
+
+################################################################################
+# Switches
+################################################################################
+switch:
+  - platform: restart
+    id: ${device_internal_name}_device_restart
+    name: "Restart"
+    web_server:
+      sorting_weight: 10    
+
+  - platform: safe_mode
+    id: ${device_internal_name}_device_safe_mode
+    name: "Use Safe Mode"
+    disabled_by_default: true
+    web_server:
+      sorting_weight: 10    
+
+
+# ----------------------------------------------------------------------------------------------------------
+# Commented out until needed
+# ----------------------------------------------------------------------------------------------------------
+
+
+#  - platform: uart
+#    uart_id: energomonitor_uart
+#    name: "${device_friendly_name} Energy Reset"
+#    data: [0x01, 0x42, 0x80, 0x11]
+#    web_server:
+#      sorting_weight: 100
+
+# Energy Meter
+#  - platform: template
+#    name: "Reset Energy Meter"
+#    id: reset_energy_meter
+#    turn_on_action:
+#      - lambda: |-
+#          id(energy_meter).publish_state(0.0);
+#          auto now = id(base_code_backup_internal_time).now();
+#          char timestamp[20];
+#          sprintf(timestamp, "%02d:%02d:%02d", now.hour, now.minute, now.second);
+#          id(system_log) += std::string(timestamp) + " - Energy Meter manually reset.\n";
+#          if (id(system_log).length() > 3000)
+#            id(system_log).erase(0, 1000);
+#      - switch.turn_off: reset_energy_meter
+
+#  - platform: template
+#    id: reset_energy_meter_switch
+#    name: "Reset Energy Meter Switch (Internal)"
+#    internal: true
+#    turn_on_action:
+#      - switch.turn_off: reset_energy_meter_switch
+
+
+
+
+
+# Reset Switchs Press Count
+  - platform: template
+    name: "Reset Switch 1 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_1_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 1 press count reset to 0");
+    web_server:
+      sorting_weight: 20
+
+  - platform: template
+    name: "Reset Switch 2 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_2_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 2 press count reset to 0");
+    web_server:
+      sorting_weight: 20      
+
+  - platform: template
+    name: "Reset Switch 3 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_3_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 3 press count reset to 0");
+    web_server:
+      sorting_weight: 20
+
+  - platform: template
+    name: "Reset Switch 4 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_4_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 4 press count reset to 0");
+    web_server:
+      sorting_weight: 20
+
+  - platform: template
+    name: "Reset Switch 5 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_5_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 5 press count reset to 0");
+    web_server:
+      sorting_weight: 20        
+
+  - platform: template
+    name: "Reset Switch 6 Press Count"
+    turn_on_action:
+      - lambda: |-
+          id(switch_6_press_count) = 0;
+          ESP_LOGI("switch_counter", "Switch 6 press count reset to 0");
+    web_server:
+      sorting_weight: 20                     
+
+# Runtime timers reset
+  - platform: template
+    name: "Reset Toilet Light Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_1_runtime) = 0;
+          ESP_LOGI("light_timer", "Toilet Light runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+
+  - platform: template
+    name: "Reset Main Light Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_2_runtime) = 0;
+          ESP_LOGI("light_timer", "Main Light runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+
+  - platform: template
+    name: "Reset Shower Light Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_3_runtime) = 0;
+          ESP_LOGI("light_timer", "Shower Light runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+
+  - platform: template
+    name: "Reset Fan Runtime"
+    turn_on_action:
+      - lambda: |-
+          id(light_4_runtime) = 0;
+          ESP_LOGI("light_timer", "Fan runtime reset to 0");
+    web_server:
+      sorting_weight: 30
+      
