@@ -29,3 +29,85 @@ safe_mode:
   disabled: false
   reboot_timeout: 5min
   num_attempts: 5
+
+################################################################################
+# Time
+################################################################################
+time:
+  - platform: homeassistant
+    id: ${device_internal_name}_internal_time
+    timezone: ${region}
+  - platform: homeassistant
+    id: hass_time
+
+################################################################################
+# I2C
+################################################################################
+i2c:
+  - id: ${device_internal_name}_i2c_bus0
+    sda: GPIO48
+    scl: GPIO47
+    scan: true
+
+################################################################################
+# UART
+################################################################################
+uart:
+  id: energomonitor_uart 
+  rx_pin: 18
+  tx_pin: 17
+  baud_rate: 9600
+
+################################################################################
+# Sensors
+################################################################################
+sensor:
+  - platform: internal_temperature
+    id: ${device_internal_name}_internal_temperature
+    name: "Internal Temperature"
+    update_interval: ${device_sampling_time}
+    disabled_by_default: false
+    icon: mdi:coolant-temperature
+
+  - platform: uptime
+    id: ${device_internal_name}_uptime_sensor
+    name: "Uptime Sensor"
+    update_interval: ${device_sampling_time}
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: ${device_internal_name}_uptime_human
+            state: !lambda |-
+              int seconds = round(id(${device_internal_name}_uptime_sensor).raw_state);
+              int days = seconds / 86400;
+              seconds %= 86400;
+              int hours = seconds / 3600;
+              seconds %= 3600;
+              int minutes = seconds / 60;
+              seconds %= 60;
+              return (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              ).c_str();
+    internal: true
+
+  - platform: wifi_signal
+    id: ${device_internal_name}_wifi_signal
+    name: "WiFi Signal dB"
+    update_interval: ${device_sampling_time}
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:wifi
+
+  - platform: wifi_signal
+    id: ${device_internal_name}_wifi_signal_percentage
+    name: "WiFi Signal Percentage"
+    update_interval: ${device_sampling_time}
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "%"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:wifi
